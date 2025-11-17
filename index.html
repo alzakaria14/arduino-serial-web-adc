@@ -99,8 +99,9 @@
             height: 450px;
             position: relative;
         }
-        canvas {
-            display: block;
+        .graph-container canvas {
+            width: 100%;
+            height: 100%;
         }
         .status {
             padding: 10px;
@@ -181,12 +182,19 @@
         </div>
     </div>
 
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         let port;
         let reader;
         let isConnected = false;
         let dataArray = [];
+        let timeLabels = [];
         const MAX_DATA_POINTS = 500;
+
+        let chart;               // Chart.js instance
+        let lastChartUpdate = 0; // timestamp ms untuk throttle update tiap ~2 detik
 
         const connectBtn = document.getElementById('connectBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
@@ -195,17 +203,63 @@
         const status = document.getElementById('status');
         const memo = document.getElementById('memo');
         const canvas = document.getElementById('graphCanvas');
-        const ctx = canvas.getContext('2d');
 
-        // Setup canvas
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth - 30;
-            canvas.height = container.clientHeight - 30;
-            drawGraph();
+        // Inisialisasi Chart.js
+        function initChart() {
+            const ctx = canvas.getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'ADC',
+                        data: dataArray,
+                        borderColor: '#1464c8',
+                        backgroundColor: 'rgba(20, 100, 200, 0.15)',
+                        tension: 0.2,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Waktu'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'ADC'
+                            },
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
         }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+
+        // Update Chart.js dengan throttle 2 detik
+        function updateChartThrottled() {
+            const now = Date.now();
+            if (now - lastChartUpdate >= 2000) { // 2000 ms = 2 detik
+                lastChartUpdate = now;
+                if (chart) {
+                    chart.data.labels = timeLabels;
+                    chart.data.datasets[0].data = dataArray;
+                    chart.update('none');
+                }
+            }
+        }
 
         // Fungsi untuk menambahkan log ke memo
         function addLog(message) {
@@ -283,11 +337,19 @@
                             // Coba parse sebagai angka
                             const numValue = parseFloat(line);
                             if (!isNaN(numValue)) {
+                                const timeLabel = new Date().toLocaleTimeString();
+
                                 dataArray.push(numValue);
+                                timeLabels.push(timeLabel);
+
+                                // Batasi jumlah titik data
                                 if (dataArray.length > MAX_DATA_POINTS) {
                                     dataArray.shift();
+                                    timeLabels.shift();
                                 }
-                                drawGraph();
+
+                                // Update grafik (di-throttle per 2 detik)
+                                updateChartThrottled();
                             }
                         }
                     }
@@ -297,72 +359,6 @@
             } finally {
                 reader.releaseLock();
             }
-        }
-
-        // Gambar grafik
-        function drawGraph() {
-            const width = canvas.width;
-            const height = canvas.height;
-            const padding = 50;
-            const graphWidth = width - padding * 2;
-            const graphHeight = height - padding * 2;
-
-            // Clear canvas
-            ctx.clearRect(0, 0, width, height);
-
-            // Background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, width, height);
-
-            // Border grafik
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(padding, padding, graphWidth, graphHeight);
-
-            // Label sumbu
-            ctx.fillStyle = '#000';
-            ctx.font = '14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('t (waktu)', width / 2, height - 15);
-
-            ctx.save();
-            ctx.translate(15, height / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText('ADC', 0, 0);
-            ctx.restore();
-
-            // Gambar data
-            if (dataArray.length < 2) return;
-
-            // Cari min dan max untuk scaling
-            const minVal = Math.min(...dataArray);
-            const maxVal = Math.max(...dataArray);
-            const range = maxVal - minVal || 1;
-
-            ctx.strokeStyle = '#1464c8';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-
-            for (let i = 0; i < dataArray.length; i++) {
-                const x = padding + (i / (dataArray.length - 1)) * graphWidth;
-                const y = padding + graphHeight - ((dataArray[i] - minVal) / range) * graphHeight;
-
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            }
-
-            ctx.stroke();
-
-            // Tampilkan nilai min dan max
-            ctx.fillStyle = '#555';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'right';
-            ctx.fillText(`Max: ${maxVal.toFixed(1)}`, width - padding - 5, padding + 15);
-            ctx.fillText(`Min: ${minVal.toFixed(1)}`, width - padding - 5, height - padding - 5);
-            ctx.fillText(`Points: ${dataArray.length}`, width - padding - 5, padding + 35);
         }
 
         // Save data
@@ -396,13 +392,18 @@ Total Data Points: ${dataArray.length}
         // Clear data
         clearBtn.addEventListener('click', () => {
             dataArray = [];
+            timeLabels = [];
             memo.innerHTML = '';
-            drawGraph();
+            if (chart) {
+                chart.data.labels = timeLabels;
+                chart.data.datasets[0].data = dataArray;
+                chart.update('none');
+            }
             addLog('Data dan log telah dibersihkan');
         });
 
-        // Initial draw
-        drawGraph();
+        // Inisialisasi grafik saat halaman dimuat
+        initChart();
     </script>
 </body>
 </html>
