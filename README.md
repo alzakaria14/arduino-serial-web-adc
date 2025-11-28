@@ -8,7 +8,7 @@ Telah terkalibrasi untuk konduktivitas tanah dengan satuan (μS/cm) menggunakan 
 Formula Konduktivitas dari lab menggunakan sampel tanah
 ---
 \[
-\sigma = (3.0744 \times \text{ADC}) - 1008.9
+σ = (3.0744 * ADC) - 1008.9
 \]
 ---
 <img width="755" height="452" alt="image" src="https://github.com/user-attachments/assets/dc8859a8-063e-49eb-bd59-af339698409a" />
