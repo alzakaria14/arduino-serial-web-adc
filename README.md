@@ -4,6 +4,17 @@ Created by Al Zakaria
 
 Aplikasi web ini memungkinkan Anda membaca data dari Arduino secara langsung melalui browser menggunakan Web Serial API, menampilkannya dalam bentuk log teks dan grafik real-time menggunakan Chart.js. File dapat disimpan sebagai .txt secara otomatis.
 
+Telah terkalibrasi untuk konduktivitas tanah dengan satuan (μS/cm) menggunakan persamaan kalibrator
+> ### 📌 Formula Konduktivitas dari lab menggunakan sampel tanah
+> \[
+> \sigma = (3.0744 \times \text{ADC}) - 1008.9
+> \]
+> di mana:
+> - \(\sigma\) = konduktivitas (S/m)
+> - ADC = nilai pembacaan sensor
+<img width="755" height="452" alt="image" src="https://github.com/user-attachments/assets/dc8859a8-063e-49eb-bd59-af339698409a" />
+
+
 🚀 Fitur Utama
 
 Koneksi langsung ke Arduino melalui Web Serial API
