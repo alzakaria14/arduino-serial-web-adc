@@ -212,7 +212,7 @@
                 data: {
                     labels: timeLabels,
                     datasets: [{
-                        label: 'ADC',
+                        label: 'Konduktivitas (μS/cm)',
                         data: dataArray,
                         borderColor: '#1464c8',
                         backgroundColor: 'rgba(20, 100, 200, 0.15)',
@@ -234,7 +234,7 @@
                         y: {
                             title: {
                                 display: true,
-                                text: 'ADC'
+                                text: 'μS/cm'
                             },
                             beginAtZero: false
                         }
@@ -339,7 +339,8 @@
                             if (!isNaN(numValue)) {
                                 const timeLabel = new Date().toLocaleTimeString();
 
-                                dataArray.push(numValue);
+                                const conductivityValue = (3.0744 * numValue) - 1008.9;
+                                dataArray.push(conductivityValue);
                                 timeLabels.push(timeLabel);
 
                                 // Batasi jumlah titik data
