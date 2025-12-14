@@ -332,7 +332,7 @@
                     for (let line of lines) {
                         line = line.trim();
                         if (line) {
-                            addLog(line);
+                            // addLog(line);
                             
                             // Coba parse sebagai angka
                             const numValue = parseFloat(line);
@@ -340,6 +340,7 @@
                                 const timeLabel = new Date().toLocaleTimeString();
 
                                 const conductivityValue = (3.0744 * numValue) - 1008.9;
+                                addLog(conductivityValue);
                                 dataArray.push(conductivityValue);
                                 timeLabels.push(timeLabel);
 
