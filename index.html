@@ -338,8 +338,7 @@
                             const numValue = parseFloat(line);
                             if (!isNaN(numValue)) {
                                 const timeLabel = new Date().toLocaleTimeString();
-
-                                const conductivityValue = (3.0744 * numValue) - 1008.9;
+                                const conductivityValue = (3.1387 * numValue) - 1043;
                                 addLog(conductivityValue);
                                 dataArray.push(conductivityValue);
                                 timeLabels.push(timeLabel);
