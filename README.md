@@ -9,6 +9,8 @@ Formula Konduktivitas dari lab menggunakan sampel tanah
 ---
 \[
 y = 0.3186x + 332.49
+\]
+\[
 σ =3,1387𝐴𝐷𝐶 −1043
 \]
 ---
